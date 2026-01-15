@@ -1,12 +1,12 @@
 const User = require("../")
 
 const register = (req, res) => {
-  res.render("auth/register.ejs");
-const register = (req, res) => {
-  res.render("auth/register.ejs");
+  res.render("auth/register.ejs")
 };
 
-const registerUser = (req, res) => {
+
+const registerUser =async (req, res) => {
+    const userInDatabase =await User.findOne({ username: req.body.username});
   // Handle request
 };
 
