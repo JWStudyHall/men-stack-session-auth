@@ -1,16 +1,73 @@
-const User = require("../")
+const User = require("../models/user.js");
+const bcrypt = require("bcrypt");
 
+// GET "/auth/register"
 const register = (req, res) => {
-  res.render("auth/register.ejs")
+  res.render("auth/register.ejs");
 };
 
+// POST "/auth/register"
+const registerUser = async (req, res) => {
+  // Make sure username is not already taken
+  const userInDatabase = await User.findOne({ username: req.body.username });
+  if (userInDatabase) {
+    return res.send("Username already taken.");
+  }
 
-const registerUser =async (req, res) => {
-    const userInDatabase =await User.findOne({ username: req.body.username});
-  // Handle request
+  // Make sure password and confirm password are the same
+  if (req.body.password !== req.body.confirmPassword) {
+    return res.send("Password and Confirm Password must match");
+  }
+
+  // Hash the password
+  const hashedPassword = bcrypt.hashSync(req.body.password, 10);
+
+  // Create our new user
+  await User.create({ username: req.body.username, password: hashedPassword });
+
+  // redirect somewhere
+  res.redirect("/");
+};
+
+// GET "/auth/login"
+const login = (req, res) => {
+  res.render("auth/login.ejs");
+};
+
+// POST "/auth/login"
+const loginUser = async (req, res) => {
+  // Make sure username is not already taken
+  const userInDatabase = await User.findOne({ username: req.body.username });
+
+  if (userInDatabase) {
+    return res.send("Login failed. Please try again");
+  }
+
+  // Compare userInDatabase's hashed password against Form Data password hashed by bcrypt
+  const validPassword = bcrypt.compareSync(
+    req.body.password,
+    userInDatabase.password
+  );
+
+  if (!validPassword) {
+    return res.send("Login failed. Please try again.");
+  }
+//Managae Session
+
+register.session.user={
+  username: userInDatabase.username,
+  _id: userInDatabase._id,
+}
+res.redirect("/")
+//Redirect Somewhere
+
+
+
 };
 
 module.exports = {
   register,
   registerUser,
+  login,
+  loginUser
 };
