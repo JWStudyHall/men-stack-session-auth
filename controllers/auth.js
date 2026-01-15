@@ -39,7 +39,7 @@ const loginUser = async (req, res) => {
   // Make sure username is not already taken
   const userInDatabase = await User.findOne({ username: req.body.username });
 
-  if (userInDatabase) {
+  if (!userInDatabase) {
     return res.send("Login failed. Please try again");
   }
 
@@ -52,22 +52,26 @@ const loginUser = async (req, res) => {
   if (!validPassword) {
     return res.send("Login failed. Please try again.");
   }
-//Managae Session
 
-register.session.user={
-  username: userInDatabase.username,
-  _id: userInDatabase._id,
-}
-res.redirect("/")
-//Redirect Somewhere
+  // Manage Session
+  req.session.user = {
+    username: userInDatabase.username,
+    _id: userInDatabase._id,
+  };
 
-
-
+  res.redirect("/");
 };
+
+const signOut = (req, res) => {
+  req.session.destroy();
+  res.redirect("/");
+};
+
 
 module.exports = {
   register,
   registerUser,
   login,
-  loginUser
+  loginUser,
+  signOut,
 };
